@@ -560,7 +560,8 @@ cl_int FFTBinaryLookup::buildFromSource(const char * source)
     this->m_program = FFTBinaryLookup::buildProgramFromSource(source,
                                                            this->m_context,
                                                            this->m_device,
-                                                           err);
+                                                           err,
+                                                           CL_OPTIONS);
 
     if (err != CL_SUCCESS)
     {
@@ -581,7 +582,8 @@ cl_int FFTBinaryLookup::buildFromLoadedBinary(const void * data,
                                                            len,
                                                            this->m_context,
                                                            this->m_device,
-                                                           err);
+                                                           err,
+                                                           CL_OPTIONS);
 
     return err;
 }

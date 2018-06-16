@@ -755,7 +755,7 @@ clfftStatus FFTAction::compileKernels( const cl_command_queue commQueueFFT, cons
             __debugbreak();
 #endif
 #else
-            status = clBuildProgram( program, 1, &q_device, "", NULL, NULL);
+            status = clBuildProgram( program, 1, &q_device, CL_OPTIONS, NULL, NULL);
 #endif
             if( status != CL_SUCCESS )
             {
