@@ -29,6 +29,12 @@
 #include "../include/clFFT.h"
 #include "../include/unicode.compatibility.h"
 
+#ifdef _DEBUG
+	#define CL_OPTIONS ""
+#else
+	#define CL_OPTIONS "-w"
+#endif
+
 #if defined(_MSC_VER)
 	//	Microsoft Visual C++ compiler
 	//
