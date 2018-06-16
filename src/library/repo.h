@@ -170,6 +170,7 @@ class	FFTRepo
 		//	violation could occur.
 		//releaseResources( );
 
+#ifdef _DEBUG
 		//	We should at least print out a warning message to the user if we are in our destructor and we still have resources
 		//	bound.  This should give the user a clue to remember to call clfftTeardown( )
 		if( (!mapKernels.empty( )) || (!mapFFTs.empty( )) )
@@ -177,6 +178,7 @@ class	FFTRepo
 			terr << _T( "Warning:  Program terminating, but clFFT resources not freed." ) << std::endl;
 			terr << _T( "Please consider explicitly calling clfftTeardown( )." ) << std::endl;
 		}
+#endif
 	};
 
 public:
