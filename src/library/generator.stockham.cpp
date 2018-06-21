@@ -820,7 +820,8 @@ namespace StockhamGenerator
 
 				passStr += "\n\t";
 				passStr += "__global "; passStr += RegBaseType<PR>(4);
-				passStr += " *buff4g = "; passStr += bufferRe; passStr += ";\n\t"; // Assuming 'outOffset' is 0, so not adding it here
+				passStr += " *buff4g = (__global "; passStr += RegBaseType<PR>(4); passStr += " *)";
+				passStr += bufferRe; passStr += ";\n\t"; // Assuming 'outOffset' is 0, so not adding it here
 
 				for(size_t r=0; r<radix; r++) // setting the radix loop outside to facilitate grouped writing
 				{
@@ -2097,20 +2098,20 @@ namespace StockhamGenerator
 				{
 					if(inInterleaved)
 					{
-										passStr += "__global "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
-						if(!rcSimple) {	passStr += "__global "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
+										passStr += "__global const "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						if(!rcSimple) {	passStr += "__global const "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
 					}
 					else if(inReal)
 					{
-										passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
-						if(!rcSimple) {	passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
+										passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						if(!rcSimple) {	passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
 					}
 					else
 					{
-										passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
-						if(!rcSimple) {	passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
-										passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm;  passStr += ", ";
-						if(!rcSimple) {	passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm2; passStr += ", "; }
+										passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						if(!rcSimple) {	passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe2; passStr += ", "; }
+										passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm;  passStr += ", ";
+						if(!rcSimple) {	passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm2; passStr += ", "; }
 					}
 				}
 				else
@@ -2151,24 +2152,24 @@ namespace StockhamGenerator
 				{
 					if(inInterleaved)
 					{
-						passStr += "__global "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						passStr += "__global const "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
 					}
 					else
 					{
-						passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
-						passStr += "__global "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm;  passStr += ", ";
+						passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						passStr += "__global const "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm;  passStr += ", ";
 					}
 				}
 				else
 				{
 					if(inInterleaved)
 					{
-						passStr += "__local "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
+						passStr += "__local const "; passStr += regB2Type; passStr += " *"; passStr += bufferInRe;  passStr += ", ";
 					}
 					else
 					{
-						passStr += "__local "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe; passStr += ", ";
-						passStr += "__local "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm; passStr += ", ";
+						passStr += "__local const "; passStr += regB1Type; passStr += " *"; passStr += bufferInRe; passStr += ", ";
+						passStr += "__local const "; passStr += regB1Type; passStr += " *"; passStr += bufferInIm; passStr += ", ";
 					}
 				}
 
@@ -3468,19 +3469,7 @@ namespace StockhamGenerator
 				else	str += "fft_back";
 				str += "(";
 
-        // TODO : address this kludge
-        size_t SizeParam_ret = 0;
-        clGetDeviceInfo(Dev_ID, CL_DEVICE_VENDOR, 0, NULL, &SizeParam_ret);
-        char* nameVendor = new char[SizeParam_ret];
-        clGetDeviceInfo(Dev_ID, CL_DEVICE_VENDOR, SizeParam_ret, nameVendor, NULL);
-
-        //nv compiler doesn't support __constant kernel argument
-        if (strncmp(nameVendor, "NVIDIA",6)!=0)
-          str += "__constant cb_t *cb __attribute__((max_constant_size(32))), ";
-        else
-          str += "__global cb_t *cb, ";
-
-        delete [] nameVendor;
+        str += "__global cb_t *cb, ";
 
 		//If plan has pre/post callback
 		callbackstr.clear();
@@ -3564,11 +3553,11 @@ namespace StockhamGenerator
 					{
 						if(inInterleaved)
 						{
-							str += "__global "; str += r2Type; str += " * restrict gbIn, ";
+							str += "__global const "; str += r2Type; str += " * restrict gbIn, ";
 						}
 						else if(inReal)
 						{
-							str += "__global "; str += rType; str += " * restrict gbIn, ";
+							str += "__global const "; str += rType; str += " * restrict gbIn, ";
 						}
 						else
 						{
@@ -3675,22 +3664,22 @@ namespace StockhamGenerator
 					{ 
 						if(inInterleaved)
 						{
-							if(!rcSimple)	{	str += "__global "; str += r2Type; str += " *lwbIn2;\n\t"; }
-												str += "__global "; str += r2Type; str += " *lwbIn;\n\t";  
+							if(!rcSimple)	{	str += "__global const "; str += r2Type; str += " *lwbIn2;\n\t"; }
+												str += "__global const "; str += r2Type; str += " *lwbIn;\n\t";
 						}
 						else if(inReal)
 						{
-							if(!rcSimple)	{	str += "__global "; str += rType; str += " *lwbIn2;\n\t"; }
-												str += "__global "; str += rType; str += " *lwbIn;\n\t";
+							if(!rcSimple)	{	str += "__global const "; str += rType; str += " *lwbIn2;\n\t"; }
+												str += "__global const "; str += rType; str += " *lwbIn;\n\t";
 
 						}
 						else
 						{
-							if(!rcSimple)	{	str += "__global "; str += rType; str += " *lwbInRe2;\n\t"; }
-							if(!rcSimple)	{	str += "__global "; str += rType; str += " *lwbInIm2;\n\t"; }
+							if(!rcSimple)	{	str += "__global const "; str += rType; str += " *lwbInRe2;\n\t"; }
+							if(!rcSimple)	{	str += "__global const "; str += rType; str += " *lwbInIm2;\n\t"; }
 							  
-												str += "__global "; str += rType; str += " *lwbInRe;\n\t"; 
-												str += "__global "; str += rType; str += " *lwbInIm;\n\t"; 
+												str += "__global const "; str += rType; str += " *lwbInRe;\n\t"; 
+												str += "__global const "; str += rType; str += " *lwbInIm;\n\t"; 
 							
 						}
 					}
@@ -3754,12 +3743,12 @@ namespace StockhamGenerator
 						{
 							if(inInterleaved)
 							{
-								str += "__global "; str += r2Type; str += " *lwbIn;\n\t";
+								str += "__global const "; str += r2Type; str += " *lwbIn;\n\t";
 							}
 							else
 							{
-								str += "__global "; str += rType; str += " *lwbInRe;\n\t";
-								str += "__global "; str += rType; str += " *lwbInIm;\n\t";
+								str += "__global const "; str += rType; str += " *lwbInRe;\n\t";
+								str += "__global const "; str += rType; str += " *lwbInIm;\n\t";
 							}
 						}
 
