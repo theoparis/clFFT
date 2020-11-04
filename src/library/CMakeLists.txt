@@ -81,28 +81,37 @@ set( clFFT.Files ${clFFT.Source} ${clFFT.Headers} )
 #	add_definitions( ${Boost_LIB_DIAGNOSTIC_DEFINITIONS} )
 add_definitions( "/DCLFFT_EXPORTS" )
 
-# Include standard OpenCL headers
-include_directories( ${OPENCL_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include ../include )
-
 add_library( clFFT ${clFFT.Files} )
+
+target_include_directories(clFFT
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${clFFT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${clFFT_BINARY_DIR}/include>
+    )
+
 target_link_libraries( clFFT ${OPENCL_LIBRARIES} ${CMAKE_DL_LIBS} )
 
-set_target_properties( clFFT PROPERTIES VERSION ${CLFFT_VERSION} )
-set_target_properties( clFFT PROPERTIES SOVERSION ${CLFFT_SOVERSION} )
-set_target_properties( clFFT PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+set_target_properties(clFFT PROPERTIES VERSION ${clFFT_VERSION})
+set_target_properties(clFFT PROPERTIES SOVERSION ${clFFT_VERSION_MAJOR})
+set_target_properties(clFFT PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+
+if(NOT BUILD_SHARED_LIBS)
+    set_target_properties(clFFT PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 if( CMAKE_COMPILER_IS_GNUCC )
     configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/clFFT.pc.in
                     ${CMAKE_CURRENT_BINARY_DIR}/clFFT.pc @ONLY )
 
     install( FILES ${CMAKE_CURRENT_BINARY_DIR}/clFFT.pc
-             DESTINATION lib${SUFFIX_LIB}/pkgconfig )
+             DESTINATION lib${CLFFT_SUFFIX_LIB}/pkgconfig )
 endif( )
 
 # CPack configuration; include the executable into the package
 install( TARGETS clFFT
         EXPORT Library
-        RUNTIME DESTINATION bin${SUFFIX_BIN}
-        LIBRARY DESTINATION lib${SUFFIX_LIB}
-        ARCHIVE DESTINATION lib${SUFFIX_LIB}/import
+        RUNTIME DESTINATION bin${CLFFT_SUFFIX_BIN}
+        LIBRARY DESTINATION lib${CLFFT_SUFFIX_LIB}
+        ARCHIVE DESTINATION lib${CLFFT_SUFFIX_LIB}/import
         )

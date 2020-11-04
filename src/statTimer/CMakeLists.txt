@@ -63,11 +63,11 @@ add_definitions( "/DSTATTIMER_EXPORTS" )
 # Include standard OpenCL headers
 include_directories( ${OPENCL_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/include ../include )
 
-add_library( StatTimer ${StatTimer.Files} )
-set_target_properties( StatTimer PROPERTIES VERSION ${CLFFT_VERSION} )
-set_target_properties( StatTimer PROPERTIES SOVERSION ${CLFFT_SOVERSION} )
-set_target_properties( StatTimer PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
-target_link_libraries( StatTimer ${OPENCL_LIBRARIES} )
+add_library(StatTimer ${StatTimer.Files})
+set_target_properties(StatTimer PROPERTIES VERSION ${clFFT_VERSION})
+set_target_properties(StatTimer PROPERTIES SOVERSION ${clFFT_VERSION_MAJOR})
+set_target_properties(StatTimer PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+target_link_libraries(StatTimer ${OPENCL_LIBRARIES})
 
 if( UNIX AND NOT APPLE )
 	# This library dependency is brought in by the high precision timer available in linux
@@ -77,7 +77,7 @@ endif( )
 # CPack configuration; include the executable into the package
 install( TARGETS StatTimer
         EXPORT Library
-        RUNTIME DESTINATION bin${SUFFIX_BIN}
-        LIBRARY DESTINATION lib${SUFFIX_LIB}
-        ARCHIVE DESTINATION lib${SUFFIX_LIB}/import
+        RUNTIME DESTINATION bin${CLFFT_SUFFIX_BIN}
+        LIBRARY DESTINATION lib${CLFFT_SUFFIX_LIB}
+        ARCHIVE DESTINATION lib${CLFFT_SUFFIX_LIB}/import
         )

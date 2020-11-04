@@ -23,9 +23,9 @@ get_filename_component( testDir "${fixedTestLocation}" PATH )
 
 set( installPath "" )
 if( WIN32 )
-    set( installPath "${CMAKE_INSTALL_PREFIX}/bin@SUFFIX_BIN@" )
+    set( installPath "${CMAKE_INSTALL_PREFIX}/bin@CLFFT_SUFFIX_BIN@" )
 else( )
-    set( installPath "${CMAKE_INSTALL_PREFIX}/lib@SUFFIX_LIB@" )
+    set( installPath "${CMAKE_INSTALL_PREFIX}/lib@CLFFT_SUFFIX_LIB@" )
 endif( )
 
 # Only search for dependencies that have ROOT defined

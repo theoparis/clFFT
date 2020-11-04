@@ -76,7 +76,7 @@ include_directories( ${Boost_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS} ${FFTW_INCLUDE_
 add_executable( Test ${clFFT.Test.Files} )
 
 # If the runtime is being built by the project, use it, otherwise link to a runtime library specified in the install prefix
-if( BUILD_RUNTIME )
+if( CLFFT_BUILD_RUNTIME )
 	target_link_libraries( Test clFFT ${Boost_LIBRARIES} ${GTEST_LIBRARIES} ${FFTW_LIBRARIES} ${OPENCL_LIBRARIES} ${LD_PTHREAD} ${CMAKE_DL_LIBS})
 else( )
 	# Search for 64bit libs if FIND_LIBRARY_USE_LIB64_PATHS is set to true in the global environment, 32bit libs else
@@ -103,6 +103,6 @@ IF( (MSVC_VERSION VERSION_EQUAL 1600) AND (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_
 	set_target_properties( Test PROPERTIES OUTPUT_NAME "clFFT_Test" )
 ENDIF( )
 
-set_target_properties( Test PROPERTIES VERSION ${CLFFT_VERSION} )
+set_target_properties( Test PROPERTIES VERSION ${clFFT_VERSION} )
 set_target_properties( Test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 

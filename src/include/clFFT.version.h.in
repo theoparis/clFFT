@@ -17,8 +17,8 @@
 
 /* the configured version and settings for clFFT
  */
-#define clfftVersionMajor @CLFFT_VERSION_MAJOR@
-#define clfftVersionMinor @CLFFT_VERSION_MINOR@
-#define clfftVersionPatch @CLFFT_VERSION_PATCH@
+#define clfftVersionMajor @clFFT_VERSION_MAJOR@
+#define clfftVersionMinor @clFFT_VERSION_MINOR@
+#define clfftVersionPatch @clFFT_VERSION_PATCH@
 
 #cmakedefine CLFFT_STATIC

@@ -14,45 +14,25 @@
 # limitations under the License.
 # ########################################################################
 
-if( WIN32 )
-	# We require 2.8.3 for windows because of a bug in cmake that prevented vs2010 from generating
-	# executables properly with multiple periods
-	cmake_minimum_required( VERSION 2.8.3 )
-else( )
-	cmake_minimum_required( VERSION 2.6 )
-endif( )
+cmake_minimum_required(VERSION 3.5)
 
-if( CMAKE_GENERATOR MATCHES "NMake" )
-	option( NMAKE_COMPILE_VERBOSE "Print compile and link strings to the console" OFF )
-	if( NMAKE_COMPILE_VERBOSE )
+cmake_policy(SET CMP0077 NEW)
+
+if(CMAKE_GENERATOR MATCHES "NMake")
+	option(NMAKE_COMPILE_VERBOSE "Print compile and link strings to the console" OFF)
+	if(NMAKE_COMPILE_VERBOSE)
 		set( CMAKE_START_TEMP_FILE "" )
 		set( CMAKE_END_TEMP_FILE "" )
 		set( CMAKE_VERBOSE_MAKEFILE 1 )
-	endif( )
-endif( )
+	endif()
+endif()
 
-# This becomes the name of the solution file
-project( clFFT )
+project(clFFT VERSION 2.12.2 LANGUAGES C CXX)
 
-# Define a version for the code
-if( NOT DEFINED CLFFT_VERSION_MAJOR )
-	set( CLFFT_VERSION_MAJOR 2 )
-endif( )
+# save any current module search path for restoration at end of script
+set(old_module_path ${CMAKE_MODULE_PATH})
 
-if( NOT DEFINED CLFFT_VERSION_MINOR )
-	set( CLFFT_VERSION_MINOR 12 )
-endif( )
-
-if( NOT DEFINED CLFFT_VERSION_PATCH )
-	set( CLFFT_VERSION_PATCH 2 )
-endif( )
-
-set( CLFFT_VERSION "${CLFFT_VERSION_MAJOR}.${CLFFT_VERSION_MINOR}.${CLFFT_VERSION_PATCH}")
-
-# This is incremented when the ABI to the library changes
-set( CLFFT_SOVERSION 2 )
-
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR} )
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 # On windows, it's convenient to change the default install prefix such that it does NOT point to 'program files'
 # Need to check out CMAKE_RUNTIME_OUTPUT_DIRECTORY variable, and see if that eliminates the need to modify install path
@@ -66,13 +46,13 @@ if( NOT MSVC_IDE AND NOT CMAKE_BUILD_TYPE )
 endif()
 
 # Options that the user or driver program can set to control various components of the build
-option( BUILD_RUNTIME "Build the FFT runtime library" ON )
-option( BUILD_CLIENT "Build a command line clFFT client program with a variety of configurable parameters (dependency on Boost)" OFF )
-option( BUILD_TEST "Build the library testing suite (dependency on google test, Boost, and FFTW)" OFF )
-option( BUILD_LOADLIBRARIES "Build the optional dynamic load libraries that the FFT runtime will search for" ON )
-option( BUILD_SHARED_LIBS "Build shared libraries." ON )
-option( BUILD_EXAMPLES "Build examples." ON )
-option( BUILD_CALLBACK_CLIENT "Build a command line clFFT client program that tests callback functionality (dependency on Boost)" OFF )
+option( CLFFT_BUILD_RUNTIME "Build the FFT runtime library" ON )
+option( CLFFT_BUILD_CLIENT "Build a command line clFFT client program with a variety of configurable parameters (dependency on Boost)" OFF )
+option( CLFFT_BUILD_TEST "Build the library testing suite (dependency on google test, Boost, and FFTW)" OFF )
+option( CLFFT_BUILD_LOADLIBRARIES "Build the optional dynamic load libraries that the FFT runtime will search for" ON )
+option( BUILD_SHARED_LIBS "Build shared libraries." ON)
+option( CLFFT_BUILD_EXAMPLES "Build examples." OFF )
+option( CLFFT_BUILD_CALLBACK_CLIENT "Build a command line clFFT client program that tests callback functionality (dependency on Boost)" OFF )
 
 # If BOOST_ROOT is defined as an environment value, use that value and cache it so it's visible in the cmake-gui.
 # Otherwise, create a sensible default that the user can change
@@ -83,24 +63,24 @@ endif( )
 # Currently, linux has a problem outputing both narrow and wide characters,
 # which happens in our client because openCL only supports narrow characters
 if( WIN32 )
-	option( UNICODE "Build with Unicode Support" ON )
-	if( UNICODE )
+    option( CLFFT_UNICODE "Build with Unicode Support" ON )
+    if( CLFFT_UNICODE )
 		message( STATUS "UNICODE build" )
 	endif( )
 else( )
-	set( UNICODE OFF )
+    set( CLFFT_UNICODE OFF )
 	message( STATUS "UNICODE feature disabled on linux" )
 endif()
 
 if( MSVC_IDE )
 	set_property( GLOBAL PROPERTY USE_FOLDERS TRUE )
-	set( BUILD64 ${CMAKE_CL_64} )
+    set( CLFFT_BUILD64 ${CMAKE_CL_64} )
 else()
-	option( BUILD64 "Build a 64-bit product" ON )
+    option( CLFFT_BUILD64 "Build a 64-bit product" ON )
 
 	if( IS_DIRECTORY ${PROJECT_SOURCE_DIR}/tests )
-		option( CODE_COVERAGE "Build makefiles with code coverage instrumentation" OFF )
-		if( CODE_COVERAGE )
+        option( CLFFT_CODE_COVERAGE "Build makefiles with code coverage instrumentation" OFF )
+        if( CLFFT_CODE_COVERAGE )
 			message( STATUS "Code coverage instrumentation on" )
 		endif()
 	endif()
@@ -108,24 +88,24 @@ endif()
 
 # These variables are meant to contain string which should be appended to the installation paths
 # of library and executable binaries, respectively.  They are meant to be user configurable/overridable.
-set( SUFFIX_LIB_DEFAULT "" )
-set( SUFFIX_BIN_DEFAULT "" )
+set( CLFFT_SUFFIX_LIB_DEFAULT "" )
+set( CLFFT_SUFFIX_BIN_DEFAULT "" )
 
 # Modify the global find property to help us find libraries like Boost in the correct paths for 64-bit
 # Essentially, find_library calls will look for /lib64 instead of /lib; works for windows and linux
-if( BUILD64 )
+if( CLFFT_BUILD64 )
 	set_property( GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE )
 	message( STATUS "64bit build - FIND_LIBRARY_USE_LIB64_PATHS TRUE" )
-	if( NOT APPLE )
-		set( SUFFIX_LIB_DEFAULT "64" )
+    if( NOT APPLE )
+		set( CLFFT_SUFFIX_LIB_DEFAULT "64" )
 	endif()
 else( )
 	set_property( GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE )
 	message( STATUS "32bit build - FIND_LIBRARY_USE_LIB64_PATHS FALSE" )
 endif( )
 
-set( SUFFIX_LIB ${SUFFIX_LIB_DEFAULT} CACHE STRING "String to append to 'lib' install path" )
-set( SUFFIX_BIN ${SUFFIX_BIN_DEFAULT} CACHE STRING "String to append to 'bin' install path" )
+set( CLFFT_SUFFIX_LIB ${CLFFT_SUFFIX_LIB_DEFAULT} CACHE STRING "String to append to 'lib' install path" )
+set( CLFFT_SUFFIX_BIN ${CLFFT_SUFFIX_BIN_DEFAULT} CACHE STRING "String to append to 'bin' install path" )
 
 # Useful variables to configure FindBoost.cake
 # set( Boost_USE_MULTITHREADED ON )
@@ -151,14 +131,14 @@ else( )
 	message( WARNING "Try setting Boost_DEBUG and Boost_DETAILED_FAILURE_MSG for more information" )
 endif( )
 
-# This will define OPENCL_FOUND
+# This will define OpenCL_FOUND
 find_package( OpenCL )
 
 # This will define FFTW_FOUND
 find_package( FFTW )
 
 # Enable building of the clACML client if both requested and all dependencies are found
-if( BUILD_CLIENT AND Boost_FOUND )
+if( CLFFT_BUILD_CLIENT AND Boost_FOUND )
 	set( FFT_CLIENT ON )
 else( )
 	set( FFT_CLIENT OFF )
@@ -166,7 +146,7 @@ endif( )
 
 # Enable building of the googletest unit test framework if requested and all dependencies are found
 set( UNIT_TEST OFF )
-if( BUILD_TEST )
+if( CLFFT_BUILD_TEST )
 	include(gtest.cmake)
 	if( GTEST_FOUND AND Boost_FOUND AND FFTW_FOUND )
 		set( UNIT_TEST ON )
@@ -176,7 +156,7 @@ if( BUILD_TEST )
 endif( )
 
 # Enable building of the callback client if requested and all dependencies are found
-if( BUILD_CALLBACK_CLIENT AND Boost_FOUND AND FFTW_FOUND )
+if( CLFFT_BUILD_CALLBACK_CLIENT AND Boost_FOUND AND FFTW_FOUND )
 	set( FFT_CALLBACK_CLIENT ON )
 else( )
 	set( FFT_CALLBACK_CLIENT OFF )
@@ -219,7 +199,7 @@ elseif( CMAKE_COMPILER_IS_GNUCXX )
 		add_definitions( "/D_DEBUG" )
 	endif( )
 
-	if( BUILD64 )
+    if( CLFFT_BUILD64 )
 		set( CMAKE_CXX_FLAGS "-m64 ${CMAKE_CXX_FLAGS}" )
 		set( CMAKE_C_FLAGS "-m64 ${CMAKE_C_FLAGS}" )
 	else( )
@@ -227,14 +207,14 @@ elseif( CMAKE_COMPILER_IS_GNUCXX )
 		set( CMAKE_C_FLAGS "-m32 ${CMAKE_C_FLAGS}" )
 	endif( )
 
-	if( CODE_COVERAGE )
+    if( CLFFT_CODE_COVERAGE )
 		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage" )
 		set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage" )
 	endif( )
 endif( )
 
 # If UNICODE is defined for microsoft compilers, pass extra definitions
-if( MSVC AND UNICODE )
+if( MSVC AND CLFFT_UNICODE )
 	add_definitions( "/DUNICODE /D_UNICODE" )
 endif( )
 
@@ -259,7 +239,7 @@ install( FILES
 		"./include" )
 
 # Recurse into subdirectory and start building files there
-if( BUILD_RUNTIME AND IS_DIRECTORY "${PROJECT_SOURCE_DIR}/library" )
+if( CLFFT_BUILD_RUNTIME AND IS_DIRECTORY "${PROJECT_SOURCE_DIR}/library" )
 	add_subdirectory( library )
 else( )
 	message( "Runtime library will NOT be built" )
@@ -277,7 +257,7 @@ else( )
 endif( )
 
 # Recurse into subdirectory and start building files there
-if( BUILD_LOADLIBRARIES AND IS_DIRECTORY "${PROJECT_SOURCE_DIR}/statTimer" )
+if( CLFFT_BUILD_LOADLIBRARIES AND IS_DIRECTORY "${PROJECT_SOURCE_DIR}/statTimer" )
 	add_subdirectory( statTimer )
 else( )
 	message( "LoadLibraries will NOT be built" )
@@ -297,14 +277,14 @@ else( )
 	message( "FFT callback client will NOT be built" )
 endif( )
 
-if( BUILD_EXAMPLES )
+if( CLFFT_BUILD_EXAMPLES )
 	add_subdirectory( examples )
 endif( )
 
 if( WIN32 )
 	set( destdir CMake )
 else( )
-	set( destdir lib${SUFFIX_LIB}/cmake/clFFT )
+	set( destdir lib${CLFFT_SUFFIX_LIB}/cmake/clFFT )
 endif( )
 string( REGEX REPLACE "[^/]+" ".." reldir "${destdir}" )
 configure_file(
@@ -329,20 +309,23 @@ else( )
 	set( CPACK_GENERATOR "TGZ" )
 endif( )
 
-if( BUILD64 )
-	set( CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CLFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-x64" )
+if( CLFFT_BUILD64 )
+	set( CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${clFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-x64" )
 else( )
-	set( CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CLFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-x32" )
+	set( CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${clFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-x32" )
 endif( )
 
-set( CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CLFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-Source" )
+set( CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${clFFT_VERSION}-${CMAKE_HOST_SYSTEM_NAME}-Source" )
 
-set( CPACK_PACKAGE_VERSION_MAJOR ${CLFFT_VERSION_MAJOR} )
-set( CPACK_PACKAGE_VERSION_MINOR ${CLFFT_VERSION_MINOR} )
-set( CPACK_PACKAGE_VERSION_PATCH ${CLFFT_VERSION_PATCH} )
+set( CPACK_PACKAGE_VERSION_MAJOR ${clFFT_VERSION_MAJOR} )
+set( CPACK_PACKAGE_VERSION_MINOR ${clFFT_VERSION_MINOR} )
+set( CPACK_PACKAGE_VERSION_PATCH ${clFFT_VERSION_PATCH} )
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenCL implementation of an FFT library" )
 set( CPACK_PACKAGE_VENDOR "Neutral" )
 set( CPACK_SOURCE_IGNORE_FILES "/\\\\.hg/;/\\\\.svn/;/\\\\.git/" )
 
 # Define all variables that influence CPack before including CPack, such as install targets
 include( CPack )
+
+# reset cmake module path to any earlier path
+set(CMAKE_MODULE_PATH ${old_module_path})
