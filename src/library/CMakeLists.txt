@@ -88,6 +88,8 @@ target_include_directories(clFFT
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${clFFT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${clFFT_BINARY_DIR}/include>
+    PRIVATE
+        ${OPENCL_INCLUDE_DIRS}
     )
 
 target_link_libraries( clFFT ${OPENCL_LIBRARIES} ${CMAKE_DL_LIBS} )
