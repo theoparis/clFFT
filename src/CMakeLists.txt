@@ -16,7 +16,9 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-cmake_policy(SET CMP0077 NEW)
+if(POLICY CMP007)
+    cmake_policy(SET CMP0077 NEW)
+endif()
 
 if(CMAKE_GENERATOR MATCHES "NMake")
 	option(NMAKE_COMPILE_VERBOSE "Print compile and link strings to the console" OFF)
