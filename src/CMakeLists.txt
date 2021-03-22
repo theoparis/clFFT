@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-if(POLICY CMP007)
+if(POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
 
