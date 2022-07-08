@@ -51,6 +51,7 @@ public:
     FFTStockhamAction(clfftPlanHandle plHandle, FFTPlan * plan, cl_command_queue queue, clfftStatus & err);
 
     clfftGenerators getGenerator() { return Stockham; }
+    virtual ~FFTStockhamAction() = default;
 };
 
 
@@ -178,11 +179,8 @@ private:
     bool buildBackwardKernel();
 
 public:
-
-    virtual const Signature * getSignatureData()
-    {
-        return &this->signature;
-    }
+    virtual ~FFTGeneratedStockhamAction() = default;
+    virtual const Signature *getSignatureData() { return &this->signature; }
 };
 
 

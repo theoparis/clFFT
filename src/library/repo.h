@@ -42,8 +42,21 @@ class	FFTRepo
         clfftGenerators gen;
         const FFTKernelSignatureHeader * data;
         cl_context context;
-		cl_device_id device;
-		bool dataIsPrivate;
+        cl_device_id device;
+        bool dataIsPrivate;
+
+        ~FFTRepoKey() {
+            if(data) deleteData();
+        }
+
+        FFTRepoKey(const FFTRepoKey &other) = default;
+
+        FFTRepoKey(FFTRepoKey && other)
+          : gen(other.gen), data(other.data), context(other.context),
+            device(other.device), dataIsPrivate(other.dataIsPrivate) {
+          other.data = nullptr;
+          other.dataIsPrivate = false;
+        }
 
         FFTRepoKey(clfftGenerators gen_, const FFTKernelSignatureHeader * data_, cl_context context_, cl_device_id device_)
             : gen(gen_), data(data_), context(context_), device(device_), dataIsPrivate(false)
@@ -56,17 +69,17 @@ class	FFTRepo
             char * tmp = new char[data->datasize];
             ::memcpy(tmp, data, data->datasize);
             this->data = (FFTKernelSignatureHeader*) tmp;
-			dataIsPrivate = true;
+            dataIsPrivate = true;
         }
 
         void deleteData()
         {
             if ( dataIsPrivate && (this->data != NULL) )
             {
-				char *tmp = (char *)(this->data);
-                delete[] tmp;
-				this->data = 0;
-            }            
+              char *tmp = (char *)(this->data);
+              delete[] tmp;
+              this->data = 0;
+            }
         }
 
         bool operator<(const FFTRepoKey & b) const
@@ -76,22 +89,17 @@ class	FFTRepo
             if (a.gen != b.gen)
             {
                 return a.gen < b.gen;
-            }
-            else if (a.data->datasize != b.data->datasize)
-            {
-                return a.data->datasize < b.data->datasize;
-            }
-            else if (a.context != b.context)
-            {
-                return a.context < b.context;
-            }
-			else if (a.device != b.device)
-			{
-				return a.device < b.device;
-			}
-            else
-            {
-                return ::memcmp(a.data, b.data, a.data->datasize) < 0;
+            } else if ((a.data && b.data) &&
+                       a.data->datasize != b.data->datasize) {
+              return a.data->datasize < b.data->datasize;
+            } else if (a.context != b.context) {
+              return a.context < b.context;
+            } else if (a.device != b.device) {
+              return a.device < b.device;
+            } else if(a.data && b.data){
+              return ::memcmp(a.data, b.data, a.data->datasize) < 0;
+            } else {
+              return false;
             }
         }
     };
@@ -133,6 +141,11 @@ class	FFTRepo
 		,	kernel_fwd_lock(NULL)
 		,	kernel_back_lock(NULL)
 		{}
+
+    ~fftKernels() {
+      if(kernel_fwd_lock) delete kernel_fwd_lock;
+      if (kernel_back_lock) delete kernel_back_lock;
+    }
 	};
 
 	typedef std::map< cl_program, fftKernels > mapKernelType;

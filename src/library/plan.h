@@ -364,6 +364,9 @@ private:
 
     virtual bool buildForwardKernel() = 0;
     virtual bool buildBackwardKernel() = 0;
+
+public:
+    virtual ~FFTAction() = default;
 };
 
 

@@ -138,7 +138,7 @@ clfftStatus FFTRepo::setProgramCode( const clfftGenerators gen, const FFTKernelS
 
 	std::string prefixCopyright = ss.str();
 
-	mapFFTs[ key ].ProgramString = prefixCopyright + kernel;
+  mapFFTs[std::move(key)].ProgramString = prefixCopyright + kernel;
 
 	return	CLFFT_SUCCESS;
 }
@@ -210,8 +210,8 @@ clfftStatus FFTRepo::setclProgram( const clfftGenerators gen, const FFTKernelSig
 	if( pos == mapFFTs.end( ) )
 	{
 		key.privatizeData(); // the key owns the data
-		mapFFTs[ key ].clProgram = prog;
-	}
+    mapFFTs[std::move(key)].clProgram = prog;
+  }
 	else {
 		cl_program p = pos->second.clProgram;
 		assert (NULL == p);
