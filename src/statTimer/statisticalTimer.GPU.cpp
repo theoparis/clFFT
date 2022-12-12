@@ -33,7 +33,7 @@ std::basic_string<TCHAR> commatize (T number)
 {
 	static TCHAR scratch [8*sizeof(T)];
 
-	register TCHAR * ptr = scratch + countOf( scratch );
+	TCHAR * ptr = scratch + countOf( scratch );
 	*(--ptr) = 0;
 
 	for (int digits = 3; ; )
@@ -54,7 +54,7 @@ std::basic_string<TCHAR> commatize (T number)
 
 //	Functor object to help with accumulating values in vectors
 template< typename T >
-struct Accumulator: public std::unary_function< T, void >
+struct Accumulator: public std::function<void(T)>
 {
 	T acc;
 
@@ -79,7 +79,7 @@ struct Accumulator< StatData >
 //	Unary predicate used for remove_if() algorithm
 //	Currently, RangeType is expected to be a floating point type, and ValType an integer type
 template< typename T, typename R >
-struct PruneRange: public std::binary_function< T, R, bool >
+struct PruneRange: public std::function<R(T)>
 {
 	R lower, upper;
 

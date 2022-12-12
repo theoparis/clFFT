@@ -41,7 +41,7 @@ std::basic_string<TCHAR> commatize (T number)
 {
 	static TCHAR scratch [8*sizeof(T)];
 
-	register TCHAR * ptr = scratch + countOf( scratch );
+	TCHAR * ptr = scratch + countOf( scratch );
 	*(--ptr) = 0;
 
 	for (int digits = 3; ; )
@@ -62,7 +62,7 @@ std::basic_string<TCHAR> commatize (T number)
 
 //	Functor object to help with accumulating values in vectors
 template< typename T >
-struct Accumulator: public std::unary_function< T, void >
+struct Accumulator: public std::function<void(T)>
 {
 	T acc;
 
